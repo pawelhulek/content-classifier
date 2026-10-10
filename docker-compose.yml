@@ -1,0 +1,13 @@
+services:
+  content-classifier:
+    container_name: content-classifier
+    build: .
+    # or use the published image instead of building:
+    # image: ghcr.io/pawelhulek/content-classifier:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    volumes:
+      - ./data:/data
+    ports:
+      - "8077:8077"
