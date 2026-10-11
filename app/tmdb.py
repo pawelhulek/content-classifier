@@ -8,6 +8,8 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 
+from .ranking import best_match
+
 _LOG = logging.getLogger(__name__)
 _BASE = "https://api.themoviedb.org/3"
 _TIMEOUT = 10
@@ -46,10 +48,10 @@ class TmdbClient:
             return None
         data = self._get("/search/tv", query=title.strip(), language=self._language)
         results = (data or {}).get("results") or []
-        if not results:
-            return None
-        top = results[0]
-        if not isinstance(top, dict) or "id" not in top:
+        # NOT results[0]: TMDB's relevance order puts near-name-matches ahead of
+        # the obvious show (query 'Euforia' -> a Catalan contest, not Euphoria).
+        top = best_match(results, title.strip())
+        if top is None:
             return None
         return TmdbShow(
             tv_id=int(top["id"]),
